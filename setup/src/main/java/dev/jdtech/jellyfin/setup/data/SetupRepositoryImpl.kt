@@ -1,6 +1,5 @@
 package dev.jdtech.jellyfin.setup.data
 
-import dev.jdtech.jellyfin.AppPreferences
 import dev.jdtech.jellyfin.api.JellyfinApi
 import dev.jdtech.jellyfin.database.ServerDatabaseDao
 import dev.jdtech.jellyfin.models.ExceptionUiText
@@ -10,6 +9,7 @@ import dev.jdtech.jellyfin.models.ServerAddress
 import dev.jdtech.jellyfin.models.ServerWithAddresses
 import dev.jdtech.jellyfin.models.UiText
 import dev.jdtech.jellyfin.models.User
+import dev.jdtech.jellyfin.settings.domain.AppPreferences
 import dev.jdtech.jellyfin.setup.domain.SetupRepository
 import kotlinx.coroutines.flow.Flow
 import org.jellyfin.sdk.discovery.RecommendedServerInfo
@@ -39,7 +39,7 @@ class SetupRepositoryImpl(
     }
 
     override suspend fun getCurrentServer(): Server? {
-        return appPreferences.currentServer?.let { id ->
+        return appPreferences.getValue(appPreferences.currentServer)?.let { id ->
             database.get(id)
         }
     }
@@ -234,6 +234,16 @@ class SetupRepositoryImpl(
 
     override suspend fun getUsers(serverId: String): List<User> {
         return database.getUsers(serverId)
+    }
+
+    override suspend fun getPublicUsers(serverId: String): List<User> {
+        return jellyfinApi.userApi.getPublicUsers().content.mapNotNull {
+            User(
+                id = it.id,
+                name = it.name ?: return@mapNotNull null,
+                serverId = serverId,
+            )
+        }
     }
 
     override suspend fun getCurrentUser(): User? {

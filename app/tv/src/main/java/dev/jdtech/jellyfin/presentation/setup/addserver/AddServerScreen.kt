@@ -42,6 +42,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import dev.jdtech.jellyfin.core.presentation.dummy.dummyDiscoveredServer
 import dev.jdtech.jellyfin.presentation.setup.components.DiscoveredServerItem
 import dev.jdtech.jellyfin.presentation.theme.FindroidTheme
 import dev.jdtech.jellyfin.presentation.theme.spacings
@@ -50,7 +51,6 @@ import dev.jdtech.jellyfin.setup.presentation.addserver.AddServerAction
 import dev.jdtech.jellyfin.setup.presentation.addserver.AddServerEvent
 import dev.jdtech.jellyfin.setup.presentation.addserver.AddServerState
 import dev.jdtech.jellyfin.setup.presentation.addserver.AddServerViewModel
-import dev.jdtech.jellyfin.ui.dummy.dummyDiscoveredServer
 import dev.jdtech.jellyfin.utils.ObserveAsEvents
 
 @Composable
@@ -83,13 +83,18 @@ private fun AddServerScreenLayout(
     state: AddServerState,
     onAction: (AddServerAction) -> Unit,
 ) {
+    val context = LocalContext.current
+    val focusRequester = remember { FocusRequester() }
+
     var serverAddress by rememberSaveable {
         mutableStateOf("")
     }
-    val context = LocalContext.current
 
-    val focusRequester = remember { FocusRequester() }
     val doConnect = { onAction(AddServerAction.OnConnectClick(serverAddress)) }
+
+    LaunchedEffect(true) {
+        focusRequester.requestFocus()
+    }
 
     Box(
         modifier = Modifier
@@ -191,10 +196,6 @@ private fun AddServerScreenLayout(
                 }
             }
         }
-    }
-
-    LaunchedEffect(true) {
-        focusRequester.requestFocus()
     }
 }
 
